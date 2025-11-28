@@ -22,17 +22,17 @@ void init(void) {
 	PORTA = 0b11000000;
 
 	DDRB = 0b11100000;
-	PORTB = 0b01000000;	//define motor direction
+	PORTB = 0b01000000;	//defines motor direction
 
 	DDRC = 0xFF;
 	PORTC = 0xFF;
 
 	OCR0 = 77; //5ms
-	TCCR0 = 0b00001111; //modo CTC, prescaler = 1024
+	TCCR0 = 0b00001111; // CTC, prescaler = 1024
 	TIMSK |= 0b00000010; //TC0
 
 	OCR2 = 0; //motor speed = 0
-	TCCR2 = 0b01100011;		// Modo Phase Correct, prescaler 64 (490Hz)
+	TCCR2 = 0b01100011;		// Phase Correct, prescaler 64 (490Hz)
 
 	sei(); //activates flag I of SREG
 }
@@ -45,7 +45,6 @@ ISR(TIMER0_COMP_vect){
 		// When it hits 1, we are ready to restart the motor
 		if (flagInv == 1) {
 			Inv(); // Call the function to flip the bits
-			// Restore speed here if needed, or let the loop handle it
 		}
 	}
 }
@@ -169,7 +168,7 @@ int main(void) {
 			_delay_ms(50);
 			if(flag == 0 && flagStop == 0){
 				flag=1;
-				flagInv=50; //contador para contar 250ms entre motor parar e inverter
+				flagInv=50; //counts 250ms (50 * 5ms) between the motor stopping and inverting
 				OCR2=0;
 			}
 			break;
