@@ -19,7 +19,6 @@ unsigned char speed;
 unsigned char num_d1 = 0; //current number on display 1
 unsigned char num_d0 = 0; //current number on display 0
 unsigned char signal = 0;
-unsigned char switches = 0;
 unsigned char current_display = 0;
 
 /*
