@@ -1,5 +1,6 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
+#include <stdio.h>
 #define F_CPU 16000000UL
 
 /*
@@ -63,7 +64,7 @@ void init(void) {
 
 
 	// USART Setup
-	UBRR1H = 0 // USART1
+	UBRR1H = 0; // USART1
 	UBRR1L = 207; //Baud Rate = 9600
 	UCSR1A = (1 << U2X1); //double speed
 	UCSR1B = (1 << RXCIE1) | (1 << RXEN1) | (1 << TXEN1); //habilita rececao, transmissao e interrupçao rececao
