@@ -25,8 +25,8 @@ unsigned char current_display = 0;
    USART VARIABLES
 
 */
-const unsigned char mode[] = {0b10100001, 0b10010010};
-volatile unsigned char flagMode = 0; //PC(0) / switches(1)
+const unsigned char mode[] = {0b10100001, 0b10010010, 0b10001000};
+volatile unsigned char flagMode = 0; //PC(0) / switches(1) / potentiometer(2)
 unsigned char input = 0;
 
 typedef struct USARTRX {
@@ -38,6 +38,8 @@ typedef struct USARTRX {
 
 volatile USARTRX_st rxUSART = {0, 0, 0, 0}; // inicializa variável
 char transmit_buffer[20];
+
+extern uint8_t read_adc_avg(void); //assembly function
 
 /*
    INITS
@@ -54,6 +56,9 @@ void init(void) {
 	DDRC = 0xFF;
 	PORTC = 0xFF;
 
+	DDRF = 0x00; // Set Port F as Input for ADC
+	PORTF = 0x00; // No Pull-up
+
 	OCR0 = 77; //5ms
 	TCCR0 = 0b00001111; //modo CTC, prescaler = 1024
 	TIMSK |= 0b00000010; //TC0
@@ -68,6 +73,10 @@ void init(void) {
 	UCSR1A = (1 << U2X1); //double speed
 	UCSR1B = (1 << RXCIE1) | (1 << RXEN1) | (1 << TXEN1); //habilita rececao, transmissao e interrupçao rececao
 	UCSR1C = (1 << UCSZ11) | (1 << UCSZ10) | (1 << USBS1);
+
+	// ADC Setup
+	ADMUX = 0b00100000; // AREF, direita, canal 0
+	ADCSRA = 0b10000111; // ADEN, Prescaler 128
 
 	sei(); //activates flag I of SREG
 }
@@ -176,17 +185,23 @@ int main(void) {
 	init();
 
 	unsigned char flag = 0; //flag for debounce
+	unsigned char adc_val = 0; //Variable for ADC result
 
 	while(1) {
 
 
 		if(rxUSART.receiver_buffer == 'd' || rxUSART.receiver_buffer == 'D'){
-			flagMode=0;
+			flagMode = 0;
 			rxUSART.receive = 0;
 		}
 
 		if(rxUSART.receiver_buffer == 's' || rxUSART.receiver_buffer == 'S'){
-			flagMode=1;
+			flagMode = 1;
+			rxUSART.receive = 0;
+		}
+
+		if(rxUSART.receiver_buffer == 'a' || rxUSART.receiver_buffer == 'A'){
+			flagMode = 2;
 			rxUSART.receive = 0;
 		}
 
@@ -202,30 +217,55 @@ int main(void) {
 				rxUSART.receive = 0;
 			}
 		}
-		else {
+		else if (flagMode == 1) {
 			input = PINA & 0b0111111;
 		}
 
-		switch(input){
-			case 0b00111110: //SW1 & '+' inc 5%
-			case '+':
-				_delay_ms(50);
-				if(flag == 0){
+		else {
+			// 1. Get Speed from Assembly
+			adc_val = read_adc_avg();
+
+			// 2. Map 0-255 (ADC) to 0-100 (Speed)
+			motor_speed = (adc_val * 100) / 255;
+
+			// 3. Update Motor PWM
+			speed = (motor_speed * 255) / 100;
+			OCR2 = speed;
+
+			//invert with sw5
+			if ( (PINA & 0b00010000) == 0 ) { //mascara para o sw5
+				_delay_ms(50); // Debounce
+				if(flag == 0 && flagStop == 0){
 					flag = 1;
-					if(flagStop == 1){
-						flagStop = 0;
-						speed = (motor_speed * 255) / 100;
-						OCR2 = speed;
-					}
-					else{
-						if(motor_speed < 100){
-							motor_speed += 5;
+					flagInv = 50; // counts 250ms
+					OCR2 = 0;
+				}
+			} else {
+				flag = 0; // Reset flag when button released
+			}
+		}
+
+		if (flagMode != 2) { //if not in potentiometer mode
+			switch(input){
+				case 0b00111110: //SW1 & '+' inc 5%
+				case '+':
+					_delay_ms(50);
+					if(flag == 0){
+						flag = 1;
+						if(flagStop == 1){
+							flagStop = 0;
 							speed = (motor_speed * 255) / 100;
 							OCR2 = speed;
 						}
+						else{
+							if(motor_speed < 100){
+								motor_speed += 5;
+								speed = (motor_speed * 255) / 100;
+								OCR2 = speed;
+							}
+						}
 					}
-				}
-			break;
+				break;
 
 			case 0b00111101: //SW2 & '-' dec 5%
 			case '-':
@@ -309,8 +349,9 @@ int main(void) {
 
 			default:
 				flag = 0;
-			break;
+				break;
 		}
+	}
 
 		input = 0; //reset every loop
 
