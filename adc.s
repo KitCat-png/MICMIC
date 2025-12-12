@@ -5,8 +5,9 @@
 
 read_adc_avg:
     ; --- Setup ---
-    ; Select ADC1 (MUX0=1).
-    ; Your Init in C sets ADMUX=0x20 (ADC0). We need 0x21 (ADC1).
+    ; Select ADC1 (MUX0=1)
+    ; Init in C sets ADMUX=0x20 (ADC0). We need 0x21 (ADC1)
+
     ldi r20, 0b00100001 ; REFS=00 (AREF), ADLAR=1 (Left Adj), MUX=00001 (ADC1)
     out _SFR_IO_ADDR(ADMUX), r20
 
@@ -43,5 +44,5 @@ wait_adc:
     lsr r25
     ror r24
 
-    ; Result is now in R24 (return value)
+    ; Result is now in R24 so we return
     ret

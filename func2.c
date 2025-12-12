@@ -77,10 +77,9 @@ ISR(TIMER0_COMP_vect){
 	if (flagInv > 0) {
 		flagInv--;
 		PORTC = digits[10];
-		// When it hits 1, we are ready to restart the motor
+		// When it hits 1, we restart the motor
 		if (flagInv == 1) {
 			Inv(); // Call the function to flip the bits
-			// Restore speed here if needed, or let the loop handle it
 		}
 	}
 }
@@ -116,12 +115,12 @@ void update_display(void) {
 		case 0:
 			PORTA = displays[0];
 			PORTC = digits[num_d0];
-			break;
+		break;
 
 		case 1:
 			PORTA = displays[1];
 			PORTC = digits[num_d1];
-			break;
+		break;
 
 		case 2:
 			PORTA = displays[2];
@@ -132,11 +131,12 @@ void update_display(void) {
 			else {
 				PORTC = digits[10];
 			}
-			break;
+		break;
 
 		case 3:
 			PORTA = displays[3];
 			PORTC = mode[flagMode]; //either 0 or 1 which is "d" or "S" on display
+		break;
 	}
 	current_display++;
 	if(current_display == 4) {

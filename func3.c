@@ -86,10 +86,9 @@ ISR(TIMER0_COMP_vect){
 	if (flagInv > 0) {
 		flagInv--;
 		PORTC = digits[10];
-		// When it hits 1, we are ready to restart the motor
+		// When it hits 1, we restart the motor
 		if (flagInv == 1) {
 			Inv(); // Call the function to flip the bits
-			// Restore speed here if needed, or let the loop handle it
 		}
 	}
 }
@@ -125,12 +124,12 @@ void update_display(void) {
 		case 0:
 			PORTA = displays[0];
 			PORTC = digits[num_d0];
-			break;
+		break;
 
 		case 1:
 			PORTA = displays[1];
 			PORTC = digits[num_d1];
-			break;
+		break;
 
 		case 2:
 			PORTA = displays[2];
@@ -141,11 +140,12 @@ void update_display(void) {
 			else {
 				PORTC = digits[10];
 			}
-			break;
+		break;
 
 		case 3:
 			PORTA = displays[3];
 			PORTC = mode[flagMode]; //either 0, 1 or 2 which is "d", "S" or "A" on display
+		break;
 	}
 	current_display++;
 	if(current_display == 4) {
@@ -225,10 +225,10 @@ int main(void) {
 			// 1. Get Speed from Assembly
 			adc_val = read_adc_avg();
 
-			// 2. Map 0-255 (ADC) to 0-100 (Speed)
+			// 2. Convert 0-255 (ADC) to 0-100 (Speed)
 			motor_speed = (adc_val * 100) / 255;
 
-			// 3. Update Motor PWM
+			// 3. Update Motor
 			speed = (motor_speed * 255) / 100;
 			OCR2 = speed;
 
@@ -267,91 +267,91 @@ int main(void) {
 					}
 				break;
 
-			case 0b00111101: //SW2 & '-' dec 5%
-			case '-':
-				_delay_ms(50);
-				if(flag == 0){
-					flag = 1;
-					if(flagStop == 1){
-						flagStop = 0;
-						speed = (motor_speed * 255) / 100;
-						OCR2 = speed;
-					}
-					else {
-						if(motor_speed > 0){
-							motor_speed -= 5;
+				case 0b00111101: //SW2 & '-' dec 5%
+				case '-':
+					_delay_ms(50);
+					if(flag == 0){
+						flag = 1;
+						if(flagStop == 1){
+							flagStop = 0;
 							speed = (motor_speed * 255) / 100;
 							OCR2 = speed;
 						}
+						else {
+							if(motor_speed > 0){
+								motor_speed -= 5;
+								speed = (motor_speed * 255) / 100;
+								OCR2 = speed;
+							}
+						}
 					}
-				}
-			break;
-
-			case 0b00111011: //SW3 and '1' puts motor speed at 25%
-			case '1':
-				_delay_ms(50);
-				if(flag == 0) {
-					flag = 1;
-					flagStop = 0; // Added safety un-stop
-					motor_speed = 25;
-					speed = (motor_speed * 255) / 100;
-					OCR2 = speed;
-				}
-			break;
-
-			case 0b00110111: //SW4 and '2' puts motor speed at 50%
-			case '2':
-				_delay_ms(50);
-				if(flag == 0) {
-					flag = 1;
-					flagStop = 0;
-					motor_speed = 50;
-					speed = (motor_speed * 255) / 100;
-					OCR2 = speed;
-				}
-			break;
-
-			case 0b00101111:  //SW5, 'i' and "I" inverts speed
-			case 'I':
-			case 'i':
-				_delay_ms(50);
-				if(flag == 0 && flagStop == 0){
-					flag=1;
-					flagInv=50; //contador para contar 250ms entre motor parar e inverter
-					OCR2=0;
-				}
-			break;
-
-			case 0b00011111:  //SW6, 'p' and 'P' stops motor
-			case 'P':
-			case 'p':
-				_delay_ms(50);
-				if(flag == 0){
-					flag = 1;
-					flagStop = 1;
-					motor_speed = 0;
-					speed = (motor_speed * 255) / 100;
-					OCR2 = speed;
-				}
-			break;
-
-			case 'b':
-			case 'B':
-				if(signal == 1){
-					sprintf(transmit_buffer,"Motor Speed: -%d\r\n",motor_speed);
-				}
-				else{
-					sprintf(transmit_buffer,"Motor Speed: %d\r\n",motor_speed);
-				}
-				send_message(transmit_buffer);
-				rxUSART.receive = 0;
-			break;
-
-			default:
-				flag = 0;
 				break;
+
+				case 0b00111011: //SW3 and '1' puts motor speed at 25%
+				case '1':
+					_delay_ms(50);
+					if(flag == 0) {
+						flag = 1;
+						flagStop = 0; // Added safety un-stop
+						motor_speed = 25;
+						speed = (motor_speed * 255) / 100;
+						OCR2 = speed;
+					}
+				break;
+
+				case 0b00110111: //SW4 and '2' puts motor speed at 50%
+				case '2':
+					_delay_ms(50);
+					if(flag == 0) {
+						flag = 1;
+						flagStop = 0;
+						motor_speed = 50;
+						speed = (motor_speed * 255) / 100;
+						OCR2 = speed;
+					}
+				break;
+
+				case 0b00101111:  //SW5, 'i' and "I" inverts speed
+				case 'I':
+				case 'i':
+					_delay_ms(50);
+					if(flag == 0 && flagStop == 0){
+						flag=1;
+						flagInv=50; //contador para contar 250ms entre motor parar e inverter
+						OCR2=0;
+					}
+				break;
+
+				case 0b00011111:  //SW6, 'p' and 'P' stops motor
+				case 'P':
+				case 'p':
+					_delay_ms(50);
+					if(flag == 0){
+						flag = 1;
+						flagStop = 1;
+						motor_speed = 0;
+						speed = (motor_speed * 255) / 100;
+						OCR2 = speed;
+					}
+				break;
+
+				case 'b':
+				case 'B':
+					if(signal == 1){
+						sprintf(transmit_buffer,"Motor Speed: -%d\r\n",motor_speed);
+					}
+					else{
+						sprintf(transmit_buffer,"Motor Speed: %d\r\n",motor_speed);
+					}
+					send_message(transmit_buffer);
+					rxUSART.receive = 0;
+				break;
+
+				default:
+					flag = 0;
+					break;
+			}
 		}
-	}
 
 		input = 0; //reset every loop
 
