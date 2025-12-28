@@ -264,7 +264,7 @@ void step_once(int8_t direction) {
 
  */
 
-// ISR for Input Capture (When sensor sees a pulse on PD4)
+// ISR for Input Capture (When sensor sees a pulse)
 ISR(TIMER1_CAPT_vect) {
 	// Read the timer value
 	current_capture = ICR1;
@@ -406,7 +406,7 @@ int main(void) {
 					}
 					buf_index = 0; // Reset buffer for next number
 				}
-				// 5. Capture Numbers and Minus sign
+				// Capture Numbers and Minus sign
 				else {
 					if (buf_index < 9) { // Prevent overflow
 						buffer[buf_index] = c;
