@@ -55,7 +55,7 @@ extern uint8_t read_adc_avg(void); //assembly function
 
 */
 
-const steps[] = {0b00001000, // 1000 (IN D)
+const uint8_t steps[] = {0b00001000, // 1000 (IN D)
     0b00001100, // 1100 (IN D, IN C)
     0b00000100, // 0100 (IN C)
     0b00000110, // 0110 (IN C, IN B)
