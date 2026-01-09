@@ -34,7 +34,14 @@ volatile uint8_t  rpm_timeout = 0; // To detect if motor stopped
    USART VARIABLES
 
 */
-const unsigned char mode[] = {0b10100001, 0b10010010, 0b10001000, 0b10000010, 0b11000001};
+const unsigned char mode[] = {0b00001000, // 1000 (IN D)
+    0b00001100, // 1100 (IN D, IN C)
+    0b00000100, // 0100 (IN C)
+    0b00000110, // 0110 (IN C, IN B)
+    0b00000010, // 0010 (IN B)
+    0b00000011, // 0011 (IN B, IN A)
+    0b00000001, // 0001 (IN A)
+    0b00001001  // 1001 (IN A, IN D)};
 volatile unsigned char flagMode = 0; //PC(0) / switches(1) / potentiometer(2) / step motor(3)
 unsigned char input = 0;
 
@@ -245,14 +252,14 @@ void step_once(int8_t direction) {
 	if (direction > 0) {
 		// Move Right (+1)
 		x++;
-		if (x > 3) x = 0;
+		if (x > 7) x = 0;
 		PORTE = steps[x];
 		current_pos++;
 	}
 	else {
 		// Move Left (-1)
 		x--;
-		if (x < 0) x = 3; // char is signed, so check for < 0
+		if (x < 0) x = 7; // char is signed, so check for < 0
 		PORTE = steps[x];
 		current_pos--;
 	}
