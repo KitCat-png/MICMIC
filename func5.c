@@ -55,15 +55,7 @@ extern uint8_t read_adc_avg(void); //assembly function
 
 */
 
-const uint8_t steps[] = {0b00001000, // 1000 (IN D)
-    0b00001100, // 1100 (IN D, IN C)
-    0b00000100, // 0100 (IN C)
-    0b00000110, // 0110 (IN C, IN B)
-    0b00000010, // 0010 (IN B)
-    0b00000011, // 0011 (IN B, IN A)
-    0b00000001, // 0001 (IN A)
-    0b00001001  // 1001 (IN A, IN D)
-};
+const uint8_t steps[] = {0b00001001,0b00001100,0b00000110,0b00000011};
 int8_t x = 0;
 int16_t current_pos = 0;   // Where the motor is now
 char buffer[10];           // To store the typed numbers
