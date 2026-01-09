@@ -346,7 +346,7 @@ int main(void) {
 					}
 					buf_index = 0; // Reset buffer for next number
 				}
-				// 5. Capture Numbers and Minus sign
+				// Capture Numbers and Minus sign
 				else {
 					if (buf_index < 9) { // Prevent overflow
 						buffer[buf_index] = c;
