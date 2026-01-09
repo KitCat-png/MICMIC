@@ -34,14 +34,7 @@ volatile uint8_t  rpm_timeout = 0; // To detect if motor stopped
    USART VARIABLES
 
 */
-const unsigned char mode[] = {0b00001000, // 1000 (IN D)
-    0b00001100, // 1100 (IN D, IN C)
-    0b00000100, // 0100 (IN C)
-    0b00000110, // 0110 (IN C, IN B)
-    0b00000010, // 0010 (IN B)
-    0b00000011, // 0011 (IN B, IN A)
-    0b00000001, // 0001 (IN A)
-    0b00001001  // 1001 (IN A, IN D)};
+const unsigned char mode[] = {0b10100001, 0b10010010, 0b10001000, 0b10000010, 0b11000001};
 volatile unsigned char flagMode = 0; //PC(0) / switches(1) / potentiometer(2) / step motor(3)
 unsigned char input = 0;
 
@@ -62,7 +55,15 @@ extern uint8_t read_adc_avg(void); //assembly function
 
 */
 
-const steps[] = {0b00001001,0b00001100,0b00000110,0b00000011};
+const steps[] = {0b00001000, // 1000 (IN D)
+    0b00001100, // 1100 (IN D, IN C)
+    0b00000100, // 0100 (IN C)
+    0b00000110, // 0110 (IN C, IN B)
+    0b00000010, // 0010 (IN B)
+    0b00000011, // 0011 (IN B, IN A)
+    0b00000001, // 0001 (IN A)
+    0b00001001  // 1001 (IN A, IN D)
+};
 int8_t x = 0;
 int16_t current_pos = 0;   // Where the motor is now
 char buffer[10];           // To store the typed numbers
